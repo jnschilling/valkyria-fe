@@ -1,7 +1,8 @@
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { I18nProvider } from "./i18n/I18nContext";
 import { LoginPage } from "./components/LoginPage";
-import { MeetingsPage } from "./components/MeetingsPage";
+import ReunionPage from "./components/ReunionPage";
+// import { MeetingsPage } from "./components/MeetingsPage";
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -14,7 +15,7 @@ function AppContent() {
     );
   }
 
-  return user ? <MeetingsPage /> : <LoginPage />;
+  return user ? <ReunionPage /> : <LoginPage />;
 }
 
 function App() {
