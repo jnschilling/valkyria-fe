@@ -1,4 +1,4 @@
-// src/components/ReunionPage.tsx
+// src/components/ReunionPage.tsx (Main Container - Composes subcomponents)
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { Calendar } from "lucide-react";
 import { useI18n } from "../i18n/I18nContext";
@@ -6,28 +6,18 @@ import api from "../lib/api";
 import io, { Socket } from "socket.io-client";
 import debounce from "lodash/debounce"; // npm i lodash if not installed
 
-interface RaceDetail {
-  meeting_timestamp: number;
-  reunion_label: string;
-  race_label: string;
-  start_time_in_s: number;
-  race_status: string;
-  race_name: string;
-  race_is_quinte: boolean;
-  race_guid: string;
-  start_date: string;
-  start_timestamp: number | null;
-  distance: string;
-  discipline: string;
-  starters_count: number;
-  racecourse: string;
-  ground_condition: string;
-  weather_description: string;
-}
+// Import shared types
+import {
+  RaceDetail,
+  ReunionData,
+  ExtendedMeetings,
+  Participant,
+} from "./reunions/types";
 
-interface ReunionData {
-  [reunion_label: string]: RaceDetail[];
-}
+import ReunionNavigator from "./reunions/ReunionNavigator";
+import Races from "./reunions/Races";
+import Participants from "./reunions/Participants";
+import Odds from "./reunions/Odds";
 
 interface ReunionResponse {
   date: string;
@@ -35,21 +25,12 @@ interface ReunionResponse {
   full_details: ReunionData;
 }
 
-// Extend i18n meetings type to include new keys (update your I18nContext types accordingly)
-interface ExtendedMeetings {
-  title: string;
-  noMeetings: string;
-  loading: string;
-  cached?: string;
-  error?: string;
-  updated?: string;
-}
-
 function Reunion({ date }: { date?: string }) {
   const { t } = useI18n();
   const [reunions, setReunions] = useState<ReunionData>({});
   const [loading, setLoading] = useState(true);
   const [changeMessage, setChangeMessage] = useState<string>("");
+  const [currentReunionIndex, setCurrentReunionIndex] = useState(0); // For navigation
 
   // Compute date if not provided (DDMMYYYY format)
   const today =
@@ -96,6 +77,25 @@ function Reunion({ date }: { date?: string }) {
     },
     [today, debouncedSetReunions, meetings.updated]
   ); // Stable deps
+
+  // Navigation handlers
+  const goToPreviousReunion = () => {
+    const reunionLabels = Object.keys(reunions);
+    if (reunionLabels.length > 0) {
+      setCurrentReunionIndex((prev) =>
+        prev > 0 ? prev - 1 : reunionLabels.length - 1
+      );
+    }
+  };
+
+  const goToNextReunion = () => {
+    const reunionLabels = Object.keys(reunions);
+    if (reunionLabels.length > 0) {
+      setCurrentReunionIndex((prev) =>
+        prev < reunionLabels.length - 1 ? prev + 1 : 0
+      );
+    }
+  };
 
   useEffect(() => {
     // Initial fetch via REST API
@@ -204,6 +204,27 @@ function Reunion({ date }: { date?: string }) {
     );
   }
 
+  const reunionLabels = Object.keys(reunions);
+  if (reunionLabels.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4 flex items-center">
+          <Calendar className="mr-2 h-6 w-6" />
+          {meetings.title} - {today}
+        </h1>
+        {changeMessage && (
+          <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
+            {changeMessage}
+          </div>
+        )}
+        <p>{meetings.noMeetings || "No meetings available"}</p>
+      </div>
+    );
+  }
+
+  const currentReunionLabel = reunionLabels[currentReunionIndex];
+  const currentRaces = reunions[currentReunionLabel] || [];
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 flex items-center">
@@ -215,40 +236,33 @@ function Reunion({ date }: { date?: string }) {
           {changeMessage}
         </div>
       )}
-      {Object.keys(reunions).length === 0 ? (
-        <p>{meetings.noMeetings || "No meetings available"}</p>
-      ) : (
-        <div className="space-y-4">
-          {Object.entries(reunions).map(([reunionLabel, races]) => (
-            <div key={reunionLabel} className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="text-xl font-semibold mb-2">{reunionLabel}</h2>
-              <ul className="space-y-1">
-                {races.map((race) => (
-                  <li
-                    key={race.race_label}
-                    className="p-2 bg-white rounded flex justify-between items-center"
-                  >
-                    <span>
-                      {race.race_is_quinte && " ⭐"} {race.race_label} -{" "}
-                      {race.distance} ({race.discipline})
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {race.start_time_in_s
-                        ? new Date(
-                            race.start_time_in_s / 1000
-                          ).toLocaleTimeString("fr-FR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "TBD"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
+      <ReunionNavigator
+        currentIndex={currentReunionIndex}
+        total={reunionLabels.length}
+        currentLabel={currentReunionLabel}
+        onPrevious={goToPreviousReunion}
+        onNext={goToNextReunion}
+      />
+      <Races races={currentRaces} />
+      {/* For Participants and Odds: Select a race first? Or show for first race */}
+      <div className="mt-6">
+        {currentRaces.length > 0 ? (
+          <>
+            <Participants
+              date={today}
+              reunionLabel={currentReunionLabel}
+              raceLabel={currentRaces[0]?.race_label || ""}
+            />{" "}
+            {/* Example for first race */}
+            <Odds
+              date={today}
+              reunionLabel={currentReunionLabel}
+              raceLabel={currentRaces[0]?.race_label || ""}
+            />{" "}
+            {/* Example for first race */}
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
