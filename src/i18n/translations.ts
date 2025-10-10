@@ -15,6 +15,22 @@ export const translations = {
       race: "Course",
       loading: "Chargement des réunions...",
     },
+    races: {
+      title: "Courses",
+      noRaces: "Aucune course.",
+      loading: "Chargement...",
+      quinte: "Quinté",
+      noSelections: "Aucune sélection.",
+    },
+    participants: {
+      title: "Participants Sélectionnés",
+      loading: "Chargement des sélections...",
+      noSelections: "Aucune sélection pour cette course.",
+      rank: "Rang",
+      favori: "Favori",
+      tocard: "Tocard",
+      watched: "Surveillé",
+    },
   },
   en: {
     auth: {
@@ -29,6 +45,22 @@ export const translations = {
       race: "Race",
       loading: "Loading meetings...",
     },
+    races: {
+      title: "Races",
+      noRaces: "No races.",
+      loading: "Loading...",
+      quinte: "Quinté",
+      noSelections: "No selections.",
+    },
+    participants: {
+      title: "Selected Participants",
+      loading: "Loading selections...",
+      noSelections: "No selections for this race.",
+      rank: "Rank",
+      favori: "Favorite",
+      tocard: "Outsider",
+      watched: "Watched",
+    },
   },
   es: {
     auth: {
@@ -42,6 +74,22 @@ export const translations = {
       noMeetings: "No hay reuniones programadas hoy",
       race: "Carrera",
       loading: "Cargando reuniones...",
+    },
+    races: {
+      title: "Carreras",
+      noRaces: "Sin carreras.",
+      loading: "Cargando...",
+      quinte: "Quinté",
+      noSelections: "Sin selecciones.",
+    },
+    participants: {
+      title: "Participantes Seleccionados",
+      loading: "Cargando selecciones...",
+      noSelections: "Sin selecciones para esta carrera.",
+      rank: "Rango",
+      favori: "Favorito",
+      tocard: "Outsider",
+      watched: "Vigilado",
     },
   },
 } as const;

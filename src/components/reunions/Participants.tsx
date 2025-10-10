@@ -1,25 +1,10 @@
 // src/components/reunions/Participants.tsx
 import { Users } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
-import { useI18n } from "../../i18n/I18nContext"; // Adjust path as needed
+import { useI18n } from "../../i18n/I18nContext";
 import api from "../../lib/api";
 import io, { Socket } from "socket.io-client";
-
-interface Participant {
-  num_pmu: string;
-  name: string;
-  type: "favori" | "tocard" | "watched";
-  latest_odds?:
-    | {
-        time_diff: string;
-        odds: string;
-        odds_rank: string;
-        odds_date?: string;
-        big_bet: string;
-      }
-    | "No odds available"
-    | "Error loading odds";
-}
+import { Participant } from "./types";
 
 interface ParticipantsProps {
   date: string;
@@ -106,9 +91,9 @@ function Participants({ date, reunionLabel, raceLabel }: ParticipantsProps) {
       <div className="bg-white rounded-lg shadow-md p-4">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
           <Users className="mr-2 h-5 w-5" />
-          Participants
+          {t.participants.title}
         </h2>
-        <p className="text-gray-500">Chargement des sélections...</p>
+        <p className="text-gray-500">{t.participants.loading}</p>
       </div>
     );
   }
@@ -117,10 +102,10 @@ function Participants({ date, reunionLabel, raceLabel }: ParticipantsProps) {
     <div className="bg-white rounded-lg shadow-md p-4">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
         <Users className="mr-2 h-5 w-5" />
-        Participants Sélectionnés
+        {t.participants.title}
       </h2>
       {participants.length === 0 ? (
-        <p className="text-gray-500">Aucune sélection pour cette course.</p>
+        <p className="text-gray-500">{t.participants.noSelections}</p>
       ) : (
         <ul className="space-y-2">
           {participants.map((participant) => {
@@ -165,7 +150,7 @@ function Participants({ date, reunionLabel, raceLabel }: ParticipantsProps) {
                         {odds.odds} {odds.big_bet && "💰"}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Rang: {odds.odds_rank} | {odds.time_diff}
+                        {t.participants.rank}: {odds.odds_rank} | {odds.time_diff}
                       </div>
                     </>
                   ) : (

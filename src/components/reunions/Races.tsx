@@ -1,32 +1,9 @@
 // src/components/reunions/Races.tsx
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
-import api from "../../lib/api"; // Adjust path
-
-interface RaceDetail {
-  race_label: string;
-  race_name: string;
-  start_timestamp: number;
-  race_status: string;
-  distance: string;
-  discipline: string;
-  race_is_quinte: boolean;
-}
-
-interface Participant {
-  num_pmu: string;
-  type: "favori" | "tocard" | "watched";
-  latest_odds?:
-    | {
-        time_diff: string;
-        odds: string;
-        odds_rank: string;
-        odds_date?: string;
-        big_bet: string;
-      }
-    | "No odds available"
-    | "Error loading odds";
-}
+import { useI18n } from "../../i18n/I18nContext";
+import api from "../../lib/api";
+import { RaceDetail, Participant } from "./types";
 
 interface RacesProps {
   races: RaceDetail[];
@@ -35,6 +12,7 @@ interface RacesProps {
 }
 
 function Races({ races, date, reunionLabel }: RacesProps) {
+  const { t } = useI18n();
   const [participantsByRace, setParticipantsByRace] = useState<
     Record<string, Participant[]>
   >({});
@@ -85,13 +63,13 @@ function Races({ races, date, reunionLabel }: RacesProps) {
       : "N/A";
 
   if (races.length === 0)
-    return <p className="text-gray-500">Aucune course.</p>;
+    return <p className="text-gray-500">{t.races.noRaces}</p>;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <h2 className="text-xl font-semibold mb-4 flex items-center">
         <Clock className="mr-2 h-5 w-5" />
-        Courses
+        {t.races.title}
       </h2>
       <ul className="space-y-2">
         {races.map((race) => {
@@ -126,7 +104,7 @@ function Races({ races, date, reunionLabel }: RacesProps) {
                       {race.distance} ({race.discipline})
                     </span>
                     {race.race_is_quinte && (
-                      <span className="ml-2 text-yellow-500">⭐ Quinté</span>
+                      <span className="ml-2 text-yellow-500">⭐ {t.races.quinte}</span>
                     )}
                   </div>
                 </div>
@@ -134,9 +112,9 @@ function Races({ races, date, reunionLabel }: RacesProps) {
 
               {/* Embedded Participants Stack */}
               {loadingParticipants ? (
-                <div className="text-xs text-gray-500">Chargement...</div>
+                <div className="text-xs text-gray-500">{t.races.loading}</div>
               ) : participants.length === 0 ? (
-                <div className="text-xs text-gray-500">Aucune sélection.</div>
+                <div className="text-xs text-gray-500">{t.races.noSelections}</div>
               ) : (
                 <div className="space-y-1 mt-2">
                   {participants.map((participant) => (
