@@ -18,6 +18,7 @@ import ReunionNavigator from "./reunions/ReunionNavigator";
 import Races from "./reunions/Races";
 import Participants from "./reunions/Participants";
 import Odds from "./reunions/Odds";
+import { Header } from "./Header";
 
 interface ReunionResponse {
   date: string;
@@ -194,19 +195,46 @@ function Reunion({ date }: { date?: string }) {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4 flex items-center">
-          <Calendar className="mr-2 h-6 w-6" />
-          {meetings.title}
-        </h1>
-        <p>{meetings.loading || "Loading reunions..."}</p>
-      </div>
+      <>
+        <Header />
+        <div className="max-w-4xl mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-4 flex items-center">
+            <Calendar className="mr-2 h-6 w-6" />
+            {meetings.title}
+          </h1>
+          <p>{meetings.loading || "Loading reunions..."}</p>
+        </div>
+      </>
     );
   }
 
   const reunionLabels = Object.keys(reunions);
   if (reunionLabels.length === 0) {
     return (
+      <>
+        <Header />
+        <div className="max-w-4xl mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-4 flex items-center">
+            <Calendar className="mr-2 h-6 w-6" />
+            {meetings.title} - {today}
+          </h1>
+          {changeMessage && (
+            <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
+              {changeMessage}
+            </div>
+          )}
+          <p>{meetings.noMeetings || "No meetings available"}</p>
+        </div>
+      </>
+    );
+  }
+
+  const currentReunionLabel = reunionLabels[currentReunionIndex];
+  const currentRaces = reunions[currentReunionLabel] || [];
+
+  return (
+    <>
+      <Header />
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4 flex items-center">
           <Calendar className="mr-2 h-6 w-6" />
@@ -217,53 +245,35 @@ function Reunion({ date }: { date?: string }) {
             {changeMessage}
           </div>
         )}
-        <p>{meetings.noMeetings || "No meetings available"}</p>
-      </div>
-    );
-  }
-
-  const currentReunionLabel = reunionLabels[currentReunionIndex];
-  const currentRaces = reunions[currentReunionLabel] || [];
-
-  return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 flex items-center">
-        <Calendar className="mr-2 h-6 w-6" />
-        {meetings.title} - {today}
-      </h1>
-      {changeMessage && (
-        <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
-          {changeMessage}
+        <ReunionNavigator
+          currentIndex={currentReunionIndex}
+          total={reunionLabels.length}
+          currentLabel={currentReunionLabel}
+          onPrevious={goToPreviousReunion}
+          onNext={goToNextReunion}
+        />
+        <Races races={currentRaces} />
+        {/* For Participants and Odds: Select a race first? Or show for first race */}
+        <div className="mt-6">
+          {currentRaces.length > 0 ? (
+            <>
+              <Participants
+                date={today}
+                reunionLabel={currentReunionLabel}
+                raceLabel={currentRaces[0]?.race_label || ""}
+              />{" "}
+              {/* Example for first race */}
+              <Odds
+                date={today}
+                reunionLabel={currentReunionLabel}
+                raceLabel={currentRaces[0]?.race_label || ""}
+              />{" "}
+              {/* Example for first race */}
+            </>
+          ) : null}
         </div>
-      )}
-      <ReunionNavigator
-        currentIndex={currentReunionIndex}
-        total={reunionLabels.length}
-        currentLabel={currentReunionLabel}
-        onPrevious={goToPreviousReunion}
-        onNext={goToNextReunion}
-      />
-      <Races races={currentRaces} />
-      {/* For Participants and Odds: Select a race first? Or show for first race */}
-      <div className="mt-6">
-        {currentRaces.length > 0 ? (
-          <>
-            <Participants
-              date={today}
-              reunionLabel={currentReunionLabel}
-              raceLabel={currentRaces[0]?.race_label || ""}
-            />{" "}
-            {/* Example for first race */}
-            <Odds
-              date={today}
-              reunionLabel={currentReunionLabel}
-              raceLabel={currentRaces[0]?.race_label || ""}
-            />{" "}
-            {/* Example for first race */}
-          </>
-        ) : null}
       </div>
-    </div>
+    </>
   );
 }
 
